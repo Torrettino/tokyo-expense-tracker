@@ -48,7 +48,7 @@ jobs:
 
       - name: Compilazione APK
         run: |
-          flet build apk src
+          flet build apk src --verbose
 
       - name: Carica APK come artefatto
         uses: actions/upload-artifact@v4
