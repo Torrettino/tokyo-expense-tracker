@@ -3,7 +3,6 @@ name: Build Android APK
 on:
   workflow_dispatch:
 
-# Risolve l'avviso di deprecazione di Node.js 20 prima della scadenza di giugno 2026
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
 
@@ -56,9 +55,21 @@ jobs:
         run: |
           flet build apk src --verbose
 
+      - name: Ispezione cartelle (Debug)
+        if: always()
+        run: |
+          echo "=== STRUTTURA DELLA CARTELLA BUILD ==="
+          if [ -d "build" ]; then
+            find build -type f -name "*.apk" || echo "Nessun APK trovato con find"
+            echo "--- Elenco completo file in build (primi 3 livelli) ---"
+            find build -maxdepth 3
+          else
+            echo "La cartella build non esiste nemmeno!"
+          fi
+
       - name: Carica APK come artefatto
         uses: actions/upload-artifact@v4
         with:
           name: tokyo-travel-wallet-apk
-          path: build/apk/*.apk  # <--- Modificato: Flet sposta l'APK qui!
+          path: build/**/*.apk  # <--- Cerca in TUTTE le sottocartelle di build
           retention-days: 30
