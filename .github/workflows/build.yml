@@ -50,7 +50,7 @@ jobs:
         env:
           PYTHONUNBUFFERED: "1"
         run: |
-          flet build apk src --verbose
+          python -m flet build apk src --verbose
 
       - name: Carica APK come artefatto
         uses: actions/upload-artifact@v4
