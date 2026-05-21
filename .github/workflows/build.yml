@@ -2,6 +2,9 @@ name: Build Android APK
 on:
   workflow_dispatch: # Permette di lanciare la compilazione manualmente con un click
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true" # Silenzia l'avviso e aggiorna i sistemi a Node 24
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -25,6 +28,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+          # Risolve un potenziale problema di permessi del compilatore su Linux
+          pip install "flet[all]" 
+
       - name: Fabbrica il file config.py usando i Secrets
         run: |
           echo "SUPABASE_URL = '${{ secrets.SUPABASE_URL }}'" > src/config.py
@@ -32,7 +38,7 @@ jobs:
 
       - name: Compilazione APK con Flet
         run: |
-          flet build apk --no-analytics
+          flet build apk src --no-analytics
 
       - name: Carica l'APK pronto nei download di GitHub
         uses: actions/upload-artifact@v4
