@@ -47,6 +47,8 @@ jobs:
           echo "SUPABASE_KEY = '${{ secrets.SUPABASE_KEY }}'" >> src/config.py
 
       - name: Compilazione APK
+        env:
+          PYTHONUNBUFFERED: "1"
         run: |
           flet build apk src --verbose
 
