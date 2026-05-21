@@ -1,64 +1,54 @@
-
 name: Build Android APK
- 
+
 on:
   workflow_dispatch:
- 
+
 jobs:
   build:
     runs-on: ubuntu-latest
- 
+
     steps:
       - name: Checkout del codice
         uses: actions/checkout@v4
- 
+
       - name: Configurazione Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
- 
+
       - name: Configurazione Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
- 
+
       - name: Configurazione Flutter SDK (con Cache)
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.19.6'
           cache: true
- 
-      # FIX: cache pip — risparmia 2-3 minuti per run
-      - name: Cache dipendenze pip
-        uses: actions/cache@v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
- 
-      - name: Installa dipendenze e prepara il progetto
+
+      - name: Installa dipendenze e crea requirements.txt pulito
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          # Copia requirements dentro src/ così Flet lo include nell'APK
-          cp requirements.txt src/requirements.txt
- 
+          pip install flet==0.22.1 supabase==2.4.0 postgrest==0.16.2 requests==2.31.0
+          echo "flet==0.22.1" > src/requirements.txt
+          echo "supabase==2.4.0" >> src/requirements.txt
+          echo "postgrest==0.16.2" >> src/requirements.txt
+          echo "requests==2.31.0" >> src/requirements.txt
+
       - name: Genera config.py dai secrets
         run: |
           echo "SUPABASE_URL = '${{ secrets.SUPABASE_URL }}'" > src/config.py
           echo "SUPABASE_KEY = '${{ secrets.SUPABASE_KEY }}'" >> src/config.py
- 
+
       - name: Compilazione APK
         run: |
           flet build apk src
- 
-      # FIX: retention esplicita (default GitHub = 90gg, probabilmente troppo)
+
       - name: Carica APK come artefatto
         uses: actions/upload-artifact@v4
         with:
           name: tokyo-travel-wallet-apk
           path: build/app/outputs/flutter-apk/*.apk
           retention-days: 30
- 
