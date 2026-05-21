@@ -28,9 +28,10 @@ jobs:
           flutter-version: '3.22.0'
           cache: true
 
-      - name: Accetta licenze Android
+      - name: Accetta licenze Android (Silenzioso)
         run: |
-          yes | flutter doctor --android-licenses
+          # Accetta le licenze senza stampare chilometri di testo legale nei log
+          yes | sdkmanager --licenses > /dev/null
 
       - name: Installa dipendenze e crea requirements.txt pulito
         run: |
