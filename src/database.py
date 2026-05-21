@@ -3,29 +3,29 @@ import requests
 from supabase import create_client, Client
 from config import SUPABASE_URL, SUPABASE_KEY
 
-# Inizializziamo la variabile globale a None per evitare chiamate di rete all'import
+# Variabile interna per memorizzare il client in modo sicuro
 _supabase_client: Client = None
 
 def get_supabase() -> Client:
     """
-    Ritorna l'istanza del client Supabase in modo sicuro (Singleton Lazy).
-    Inizializza il client solo alla prima reale richiesta di dati.
+    Inizializza ed estrae il client Supabase solo quando serve davvero,
+    isolando gli errori di rete all'avvio.
     """
     global _supabase_client
     if _supabase_client is None:
         if not SUPABASE_URL or not SUPABASE_KEY:
-            raise ValueError("Credenziali Supabase mancanti in config.py! Controlla i Secrets su GitHub.")
+            raise ValueError("Credenziali Supabase mancanti! Controlla i Secrets su GitHub.")
         _supabase_client = create_client(SUPABASE_URL, SUPABASE_KEY)
     return _supabase_client
 
-# ── Limite record per query ───────────────────────────────────────────────────
+# Limite di sicurezza per evitare download infiniti
 RECORD_LIMIT = 300
 
 
 def get_live_rate() -> float:
     """
-    Recupera il tasso di cambio EUR→JPY live da open.er-api.com.
-    Fallback a 165.0 in caso di errore o timeout.
+    Recupera il tasso di cambio EUR→JPY live.
+    In caso di blackout di rete fa un fallback a 165.0 senza bloccare l'app.
     """
     try:
         response = requests.get(
@@ -49,7 +49,7 @@ def inserisci_operazione(
     nota: str = "",
 ):
     """
-    Invia una nuova transazione su Supabase.
+    Registra una nuova riga nella tabella 'operazioni' su Supabase.
     """
     payload = {
         "data_pagamento": data_pagamento,
@@ -62,7 +62,6 @@ def inserisci_operazione(
         "nota":           nota,
     }
     try:
-        # Usa get_supabase() invece della vecchia variabile statica
         client = get_supabase()
         response = client.table("operazioni").insert(payload).execute()
         return response
@@ -72,10 +71,9 @@ def inserisci_operazione(
 
 def recupera_operazioni() -> list[dict]:
     """
-    Preleva le operazioni più recenti ordinate per data.
+    Scarica lo storico recente delle transazioni.
     """
     try:
-        # Usa get_supabase() invece della vecchia variabile statica
         client = get_supabase()
         response = (
             client
@@ -92,7 +90,7 @@ def recupera_operazioni() -> list[dict]:
 
 def calcola_metriche(operazioni_list: list[dict], tasso_corrente: float) -> dict:
     """
-    Rielabora la lista delle operazioni per calcolare i saldi in tempo reale.
+    Analizza i flussi salvati e genera i totali di cassa e banca.
     """
     totale_jpy             = 0.0
     totale_eur             = 0.0
@@ -139,3 +137,4 @@ def calcola_metriche(operazioni_list: list[dict], tasso_corrente: float) -> dict
         "saldo_contanti_jpy": max(0.0, saldo_contanti_jpy),
         "tasso_cambio":      tasso_corrente,
     }
+    
