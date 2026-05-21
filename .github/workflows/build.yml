@@ -38,9 +38,10 @@ jobs:
       - name: Installa dipendenze e crea requirements.txt pulito
         run: |
           python -m pip install --upgrade pip
-          pip install flet==0.25.0 requests==2.31.0
-          echo "flet==0.25.0" > src/requirements.txt
-          echo "requests==2.31.0" >> src/requirements.txt
+          # 1. Allineiamo rigorosamente Flet alla 0.25.1
+          # 2. ABBIAMO ELIMINATO 'requests' per evitare il crash di architettura su Android
+          pip install flet==0.25.1
+          echo "flet==0.25.1" > src/requirements.txt
 
       - name: Genera config.py dai secrets
         run: |
@@ -74,3 +75,4 @@ jobs:
             **/*.apk
           if-no-files-found: warn
           retention-days: 30
+          
