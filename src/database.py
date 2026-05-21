@@ -1,32 +1,22 @@
 # src/database.py
 import requests
-from supabase import create_client, Client
 from config import SUPABASE_URL, SUPABASE_KEY
 
-# Variabile interna per memorizzare il client in modo sicuro
-_supabase_client: Client = None
-
-def get_supabase() -> Client:
-    """
-    Inizializza ed estrae il client Supabase solo quando serve davvero,
-    isolando gli errori di rete all'avvio.
-    """
-    global _supabase_client
-    if _supabase_client is None:
-        if not SUPABASE_URL or not SUPABASE_KEY:
-            raise ValueError("Credenziali Supabase mancanti! Controlla i Secrets su GitHub.")
-        _supabase_client = create_client(SUPABASE_URL, SUPABASE_KEY)
-    return _supabase_client
-
-# Limite di sicurezza per evitare download infiniti
+# Limite di record per la sicurezza dell'app
 RECORD_LIMIT = 300
 
 
+def _get_headers() -> dict:
+    """Genera gli header di autenticazione diretti per l'API di Supabase."""
+    return {
+        "apikey": SUPABASE_KEY,
+        "Authorization": f"Bearer {SUPABASE_KEY}",
+        "Content-Type": "application/json",
+    }
+
+
 def get_live_rate() -> float:
-    """
-    Recupera il tasso di cambio EUR→JPY live.
-    In caso di blackout di rete fa un fallback a 165.0 senza bloccare l'app.
-    """
+    """Recupera il tasso di cambio EUR→JPY live."""
     try:
         response = requests.get(
             "https://open.er-api.com/v6/latest/EUR",
@@ -48,9 +38,7 @@ def inserisci_operazione(
     stato: str,
     nota: str = "",
 ):
-    """
-    Registra una nuova riga nella tabella 'operazioni' su Supabase.
-    """
+    """Invia una nuova transazione a Supabase tramite POST HTTP nativo."""
     payload = {
         "data_pagamento": data_pagamento,
         "categoria":      categoria,
@@ -62,36 +50,28 @@ def inserisci_operazione(
         "nota":           nota,
     }
     try:
-        client = get_supabase()
-        response = client.table("operazioni").insert(payload).execute()
+        url = f"{SUPABASE_URL}/rest/v1/operazioni"
+        response = requests.post(url, headers=_get_headers(), json=payload, timeout=10)
+        response.raise_for_status()
         return response
     except Exception as e:
-        raise RuntimeError(f"Impossibile salvare su Supabase: {e}")
+        raise RuntimeError(f"Errore di rete Cloud: {e}")
 
 
 def recupera_operazioni() -> list[dict]:
-    """
-    Scarica lo storico recente delle transazioni.
-    """
+    """Preleva le operazioni da Supabase tramite GET HTTP nativo."""
     try:
-        client = get_supabase()
-        response = (
-            client
-            .table("operazioni")
-            .select("*")
-            .order("data_pagamento", descending=True)
-            .limit(RECORD_LIMIT)
-            .execute()
-        )
-        return response.data
+        # Interroghiamo direttamente l'endpoint REST ordinando e limitando i record
+        url = f"{SUPABASE_URL}/rest/v1/operazioni?select=*&order=data_pagamento.desc&limit={RECORD_LIMIT}"
+        response = requests.get(url, headers=_get_headers(), timeout=10)
+        response.raise_for_status()
+        return response.json()
     except Exception as e:
-        raise RuntimeError(f"Impossibile recuperare i dati: {e}")
+        raise RuntimeError(f"Impossibile scaricare i dati: {e}")
 
 
 def calcola_metriche(operazioni_list: list[dict], tasso_corrente: float) -> dict:
-    """
-    Analizza i flussi salvati e genera i totali di cassa e banca.
-    """
+    """Rielabora la lista delle operazioni per calcolare i saldi (Invariata)."""
     totale_jpy             = 0.0
     totale_eur             = 0.0
     ricariche_revolut_eur  = 0.0
@@ -137,4 +117,3 @@ def calcola_metriche(operazioni_list: list[dict], tasso_corrente: float) -> dict
         "saldo_contanti_jpy": max(0.0, saldo_contanti_jpy),
         "tasso_cambio":      tasso_corrente,
     }
-    
