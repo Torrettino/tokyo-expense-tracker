@@ -26,7 +26,7 @@ jobs:
       - name: Configurazione Flutter SDK
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.19.6' # <--- Bloccata la versione per garantire la compatibilità con Flet 0.22.1
+          flutter-version: '3.19.6'
 
       - name: Installa dipendenze Python
         run: |
@@ -46,4 +46,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: tokyo-travel-wallet-apk
-          path: build/apk/*.apk
+          path: "**/*.apk" # <--- Modificato! I due asterischi dicono a GitHub: "Cerca in ogni sottocartella"
