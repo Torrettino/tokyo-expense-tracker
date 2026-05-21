@@ -26,7 +26,7 @@ jobs:
       - name: Configurazione Flutter SDK
         uses: subosito/flutter-action@v2
         with:
-          channel: 'stable'
+          flutter-version: '3.19.6' # <--- Bloccata la versione per garantire la compatibilità con Flet 0.22.1
 
       - name: Installa dipendenze Python
         run: |
