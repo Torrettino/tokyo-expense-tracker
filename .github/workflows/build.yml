@@ -2,9 +2,6 @@ name: Build Android APK
 on:
   workflow_dispatch:
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -17,33 +14,33 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Configurazione Java (Necessario per Android)
+      - name: Configurazione Java
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Configurazione Flutter SDK
+      - name: Configurazione Flutter SDK (con Cache)
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.19.6'
+          cache: true
 
-      - name: Installa e prepara dipendenze Python
+      - name: Installa dipendenze
         run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          cp requirements.txt src/requirements.txt
+          pip install flet supabase requests
 
-      - name: Fabbrica il file config.py usando i Secrets
+      - name: Fabbrica config.py
         run: |
           echo "SUPABASE_URL = '${{ secrets.SUPABASE_URL }}'" > src/config.py
           echo "SUPABASE_KEY = '${{ secrets.SUPABASE_KEY }}'" >> src/config.py
 
-      - name: Compilazione APK con Flet
+      - name: Compilazione APK
         run: |
           flet build apk src
+        # Questo comando ora ha più speranze perché Flutter è in cache
 
-      - name: Carica l'APK pronto nei download di GitHub
+      - name: Carica APK
         uses: actions/upload-artifact@v4
         with:
           name: tokyo-travel-wallet-apk
