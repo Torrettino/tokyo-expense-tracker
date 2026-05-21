@@ -37,8 +37,7 @@ jobs:
 
       - name: Compilazione APK
         run: |
-          flet build apk src
-        # Questo comando ora ha più speranze perché Flutter è in cache
+          flet build apk src --yes
 
       - name: Carica APK
         uses: actions/upload-artifact@v4
