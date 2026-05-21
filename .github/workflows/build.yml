@@ -39,9 +39,9 @@ jobs:
           echo "SUPABASE_URL = '${{ secrets.SUPABASE_URL }}'" > src/config.py
           echo "SUPABASE_KEY = '${{ secrets.SUPABASE_KEY }}'" >> src/config.py
 
-      - name: Compilazione APK con Flet (Nome e Icona Custom)
+      - name: Compilazione APK con Flet
         run: |
-          flet build apk src --product "Tokyo Wallet" --icon assets/icona.png
+          flet build apk src
 
       - name: Carica l'APK pronto nei download di GitHub
         uses: actions/upload-artifact@v4
