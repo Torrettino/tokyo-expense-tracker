@@ -28,22 +28,24 @@ jobs:
         with:
           flutter-version: '3.19.6'
 
-      - name: Installa dipendenze Python
+      - name: Installa e prepara dipendenze Python
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          # FIX FONDAMENTALE: Copia il requirements dentro src così Flet lo vede durante la build dell'APK
+          cp requirements.txt src/requirements.txt
 
       - name: Fabbrica il file config.py usando i Secrets
         run: |
           echo "SUPABASE_URL = '${{ secrets.SUPABASE_URL }}'" > src/config.py
           echo "SUPABASE_KEY = '${{ secrets.SUPABASE_KEY }}'" >> src/config.py
 
-      - name: Compilazione APK con Flet
+      - name: Compilazione APK con Flet (Nome e Icona Custom)
         run: |
-          flet build apk src
+          flet build apk src --product "Tokyo Wallet" --icon assets/icona.png
 
       - name: Carica l'APK pronto nei download di GitHub
         uses: actions/upload-artifact@v4
         with:
           name: tokyo-travel-wallet-apk
-          path: "**/*.apk" # <--- Modificato! I due asterischi dicono a GitHub: "Cerca in ogni sottocartella"
+          path: "**/*.apk"
