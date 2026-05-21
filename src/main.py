@@ -192,7 +192,7 @@ def main(page: ft.Page):
         sorg_dropdown,
         dest_dropdown,
         nota_input,
-        ft.VerticalDivider(height=10),
+        ft.Container(height=10),
         ft.ElevatedButton(
             text="🚀 REGISTRA SPESA",
             style=ft.ButtonStyle(bgcolor=ft.colors.BLUE_700, color=ft.colors.WHITE),
@@ -212,8 +212,9 @@ def main(page: ft.Page):
             testo_cambio.value = f"Tasso Offline (Default): 1 EUR = {tasso_live['valore']:.2f} JPY"
         aggiorna_dashboard()
 
-    # Lanciamo il thread: l'interfaccia si apre all'istante, i dati appaiono dopo un secondo
+    # Avvio del thread in background
     threading.Thread(target=carica_dati_silenziosamente, daemon=True).start()
 
 
 ft.app(target=main)
+
