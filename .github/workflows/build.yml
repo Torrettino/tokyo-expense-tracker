@@ -26,9 +26,14 @@ jobs:
           flutter-version: '3.19.6'
           cache: true
 
-      - name: Installa dipendenze
+      - name: Installa dipendenze e prepara il progetto
         run: |
-          pip install flet supabase requests
+          python -m pip install --upgrade pip
+          # Installa le dipendenze nell'ambiente di build
+          pip install -r requirements.txt
+          # PASSAGGIO FONDAMENTALE: Copia il requirements dentro src
+          # Così Flet lo vede e include le librerie nel pacchetto APK
+          cp requirements.txt src/requirements.txt
 
       - name: Fabbrica config.py
         run: |
