@@ -1,4 +1,5 @@
 flet==0.22.1
 supabase==2.4.0
 postgrest==0.16.2
-requests
+requests==2.31.0
+ 
