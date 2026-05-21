@@ -43,4 +43,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: tokyo-travel-wallet-apk
-          path: "**/*.apk"
+          path: build/app/outputs/flutter-apk/*.apk
