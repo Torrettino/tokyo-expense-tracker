@@ -30,8 +30,8 @@ jobs:
 
       - name: Accetta licenze Android (Silenzioso)
         run: |
-          # Accetta le licenze senza stampare chilometri di testo legale nei log
-          yes | sdkmanager --licenses > /dev/null
+          # Accetta le licenze tramite Flutter ma nasconde l'output di testo superfluo
+          yes | flutter doctor --android-licenses > /dev/null
 
       - name: Installa dipendenze e crea requirements.txt pulito
         run: |
