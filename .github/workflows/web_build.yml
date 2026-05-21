@@ -10,16 +10,24 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - run: |
-          pip install flet
+      
+      - name: Setup Flet
+        run: pip install flet
+      
+      - name: Crea requirements e config
+        run: |
+          # Diamo al builder solo flet, perché il resto è libreria standard
           echo "flet" > src/requirements.txt
-          # Genera il config.py come facevamo prima
+          
+          # Genera il file config.py con le tue credenziali
           echo "SUPABASE_URL = '${{ secrets.SUPABASE_URL }}'" > src/config.py
           echo "SUPABASE_KEY = '${{ secrets.SUPABASE_KEY }}'" >> src/config.py
-          # Build della Web App
-          flet build web src --output build_web
       
-      - uses: actions/upload-artifact@v4
+      - name: Build Web
+        run: flet build web src --output build_web
+      
+      - name: Carica artefatto
+        uses: actions/upload-artifact@v4
         with:
           name: web-app
           path: build_web
