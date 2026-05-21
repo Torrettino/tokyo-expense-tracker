@@ -38,12 +38,12 @@ jobs:
       - name: Installa dipendenze e crea requirements.txt pulito
         run: |
           python -m pip install --upgrade pip
+          # Installiamo la CLI 0.25.1 sulla macchina virtuale
           pip install flet==0.25.1
           
-          # IL SEGRETO E' QUI: requirements.txt DEVE ESSERE VUOTO!
-          # Usiamo "touch" per creare il file vuoto, in modo che Flet
-          # usi le sue librerie native Android e non quelle desktop.
-          touch src/requirements.txt
+          # Ripristiniamo Flet nel requirements dell'app, coordinato alla 0.25.1.
+          # Questo permette a "import flet" di funzionare dentro il telefono senza crashare.
+          echo "flet==0.25.1" > src/requirements.txt
 
       - name: Genera config.py dai secrets
         run: |
