@@ -1,0 +1,9 @@
+[tool.flet.app]
+path = "src"
+
+[tool.flet.bundle]
+product = "Tokyo Wallet"
+organization = "com.tuonome"
+
+[tool.flet.android]
+icon = "assets/icona.png"
