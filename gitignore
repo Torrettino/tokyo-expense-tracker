@@ -1,0 +1,17 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Ambienti virtuali
+venv/
+.venv/
+env/
+
+# Configurazioni sensibili e build
+src/config.py
+build/
+dist/
+*.apk
