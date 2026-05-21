@@ -3,6 +3,10 @@ name: Build Android APK
 on:
   workflow_dispatch:
 
+# Risolve l'avviso di deprecazione di Node.js 20 prima della scadenza di giugno 2026
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -56,5 +60,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: tokyo-travel-wallet-apk
-          path: build/app/outputs/flutter-apk/*.apk
+          path: build/apk/*.apk  # <--- Modificato: Flet sposta l'APK qui!
           retention-days: 30
