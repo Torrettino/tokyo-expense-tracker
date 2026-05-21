@@ -52,7 +52,7 @@ jobs:
  
       - name: Compilazione APK
         run: |
-          flet build apk src --yes
+          flet build apk src
  
       # FIX: retention esplicita (default GitHub = 90gg, probabilmente troppo)
       - name: Carica APK come artefatto
@@ -61,3 +61,4 @@ jobs:
           name: tokyo-travel-wallet-apk
           path: build/app/outputs/flutter-apk/*.apk
           retention-days: 30
+ 
