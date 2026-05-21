@@ -49,27 +49,30 @@ jobs:
           echo "SUPABASE_URL = '${{ secrets.SUPABASE_URL }}'" > src/config.py
           echo "SUPABASE_KEY = '${{ secrets.SUPABASE_KEY }}'" >> src/config.py
 
-      - name: Compilazione APK
+      - name: Compilazione APK (Con Output Forzato)
         env:
           PYTHONUNBUFFERED: "1"
         run: |
-          flet build apk src --verbose
+          # Creiamo una cartella dedicata per l'output sulla root
+          mkdir -p output_apk
+          # Forziamo flet a sputare l'APK dentro questa cartella specifica
+          flet build apk src -o output_apk --verbose
 
-      - name: Ispezione cartelle (Debug)
+      - name: Caccia al Tesoro APK (Debug Totale)
         if: always()
         run: |
-          echo "=== STRUTTURA DELLA CARTELLA BUILD ==="
-          if [ -d "build" ]; then
-            find build -type f -name "*.apk" || echo "Nessun APK trovato con find"
-            echo "--- Elenco completo file in build (primi 3 livelli) ---"
-            find build -maxdepth 3
-          else
-            echo "La cartella build non esiste nemmeno!"
-          fi
+          echo "=== RICERCA TOTALMENTE GLOBALE DI FILE APK ==="
+          find . -type f -name "*.apk" || echo "Nessun file .apk trovato in tutto il workspace!"
+          
+          echo "=== CONTENUTO DELLA CARTELLA OUTPUT FORZATO ==="
+          ls -la output_apk || echo "La cartella output_apk è vuota o non esiste"
 
       - name: Carica APK come artefatto
         uses: actions/upload-artifact@v4
         with:
           name: tokyo-travel-wallet-apk
-          path: build/**/*.apk  # <--- Cerca in TUTTE le sottocartelle di build
+          path: |
+            output_apk/**/*.apk
+            **/*.apk
+          if-no-files-found: warn
           retention-days: 30
