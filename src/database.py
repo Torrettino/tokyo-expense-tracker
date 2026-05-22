@@ -1,4 +1,4 @@
-import urllib.request
+import requests
 import json
 from config import SUPABASE_URL, SUPABASE_KEY
 
@@ -13,12 +13,13 @@ def _get_headers() -> dict:
 
 def get_live_rate() -> float:
     try:
-        req = urllib.request.Request("https://open.er-api.com/v6/latest/EUR")
-        with urllib.request.urlopen(req, timeout=5) as response:
-            data = json.loads(response.read().decode("utf-8"))
+        response = requests.get("https://open.er-api.com/v6/latest/EUR", timeout=5)
+        if response.status_code == 200:
+            data = response.json()
             return float(data["rates"]["JPY"])
+        return 165.0
     except Exception:
-        return 165.0 # Tasso di fallback sicuro in caso di assenza di rete
+        return 165.0  # Tasso di fallback sicuro in caso di assenza di rete
 
 def inserisci_operazione(data_pagamento, categoria, sorgente, importo_jpy, importo_eur, destinatario, stato, nota):
     payload = {
@@ -32,18 +33,17 @@ def inserisci_operazione(data_pagamento, categoria, sorgente, importo_jpy, impor
         "nota": nota,
     }
     url = f"{SUPABASE_URL}/rest/v1/operazioni"
-    data_bytes = json.dumps(payload).encode("utf-8")
-    req = urllib.request.Request(url, data=data_bytes, headers=_get_headers(), method="POST")
     
-    with urllib.request.urlopen(req, timeout=10) as response:
-        return response.read().decode("utf-8")
+    response = requests.post(url, headers=_get_headers(), json=payload, timeout=10)
+    return response.text
 
 def recupera_operazioni() -> list[dict]:
     url = f"{SUPABASE_URL}/rest/v1/operazioni?select=*&order=data_pagamento.desc&limit={RECORD_LIMIT}"
-    req = urllib.request.Request(url, headers=_get_headers(), method="GET")
     
-    with urllib.request.urlopen(req, timeout=10) as response:
-        return json.loads(response.read().decode("utf-8"))
+    response = requests.get(url, headers=_get_headers(), timeout=10)
+    if response.status_code == 200:
+        return response.json()
+    return []
 
 def calcola_metriche(operazioni_list: list[dict], tasso_corrente: float) -> dict:
     totale_jpy = totale_eur = ricariche_revolut_eur = spese_carta_revolut_jpy = prelievi_bancomat_jpy = spese_contanti_jpy = 0.0
@@ -83,3 +83,4 @@ def calcola_metriche(operazioni_list: list[dict], tasso_corrente: float) -> dict
         "saldo_revolut_eur": max(0.0, saldo_revolut_eur),
         "saldo_contanti_jpy": max(0.0, saldo_contanti_jpy),
     }
+    
