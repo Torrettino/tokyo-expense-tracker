@@ -12,23 +12,26 @@ jobs:
         with:
           python-version: '3.11'
       
-      # 1. Installiamo Flutter esplicitamente per evitare prompt interattivi
+      # Installazione esplicita dell'ambiente Flutter compatibile
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.24.3'
           cache: true
       
+      # Generazione controllata dell'ambiente e iniezione sicura del file config nascosto
       - name: Crea requirements e config
         run: |
-          pip install flet
-          echo "flet" > src/requirements.txt
+          pip install flet==0.22.1
+          echo "flet==0.22.1" > src/requirements.txt
+          echo "requests==2.31.0" >> src/requirements.txt
           echo "SUPABASE_URL = '${{ secrets.SUPABASE_URL }}'" > src/config.py
           echo "SUPABASE_KEY = '${{ secrets.SUPABASE_KEY }}'" >> src/config.py
       
-      # 2. Aggiungi --yes per saltare qualsiasi altra conferma
+      # Esecuzione della build web senza richieste di conferma interattive
       - name: Build Web
         run: flet build web src --output build_web --yes
       
+      # Caricamento del pacchetto statico compilato pronto per il deployment
       - uses: actions/upload-artifact@v4
         with:
           name: web-app
