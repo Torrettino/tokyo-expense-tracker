@@ -1,7 +1,0 @@
-[tool.flet.app]
-path = "src"
-
-[tool.flet.bundle]
-product      = "Tokyo Wallet"
-organization = "com.tuonome"
-version      = "1.0.0"
