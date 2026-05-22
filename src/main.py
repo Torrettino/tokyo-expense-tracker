@@ -1,9 +1,6 @@
 import flet as ft
 from datetime import date
-import threading
 import traceback
-
-# L'import di database avviene solo dentro il main per proteggere la stabilità del boot.
 
 def main(page: ft.Page):
     # ── 1. GESTIONE GLOBALE DEI CRASH ──────────────────────────────────────
@@ -48,7 +45,7 @@ def main(page: ft.Page):
     # Stato globale
     stato_app = {"tasso_live": 165.0}
 
-    # ── 4. WIDGETS DELL'INTERFACCIA (CON COLORI IN STRINGA COMPATIBILI) ────
+    # ── 4. WIDGETS DELL'INTERFACCIA ────────────────────────────────────────
     card_revolut  = ft.Text("€ 0.00", size=24, weight=ft.FontWeight.BOLD, color="blue200")
     card_contanti = ft.Text("¥ 0",    size=24, weight=ft.FontWeight.BOLD, color="green200")
     card_tot_jpy  = ft.Text("¥ 0",    size=18, weight=ft.FontWeight.BOLD)
@@ -145,7 +142,7 @@ def main(page: ft.Page):
     def aggiorna_tasso(e):
         try:
             nuovo_tasso = db.get_live_rate()
-            stato_app["tasso_live"] = nuovo_tasso
+            stato_app["tasso_live"] = nuevo_tasso
             mostra_notifica(f"Tasso aggiornato: ¥{nuovo_tasso:.2f}", "green700")
             aggiorna_dashboard()
         except Exception:
@@ -167,14 +164,14 @@ def main(page: ft.Page):
     )
 
     # Il caricamento iniziale viene renderizzato solo DOPO che la pagina principale è stata disegnata stabilmente.
-    def boot_app():
+    def boot_app(e=None):
         try:
             stato_app["tasso_live"] = db.get_live_rate()
         except Exception:
             pass
         aggiorna_dashboard()
 
-    # Avviamo il thread in modo sicuro
-    threading.Thread(target=boot_app, daemon=True).start()
+    # Utilizziamo il gestore nativo di Flet per eseguire l'inizializzazione asincrona in sicurezza nel browser
+    page.run_thread(boot_app)
 
 ft.app(target=main)
