@@ -27,9 +27,9 @@ jobs:
           echo "SUPABASE_URL = '${{ secrets.SUPABASE_URL }}'" > src/config.py
           echo "SUPABASE_KEY = '${{ secrets.SUPABASE_KEY }}'" >> src/config.py
       
-      # Esecuzione della build web senza richieste di conferma interattive
+      # Esecuzione della build web senza il flag --yes (non necessario su Flet 0.22.1)
       - name: Build Web
-        run: flet build web src --output build_web --yes
+        run: flet build web src --output build_web
       
       # Caricamento del pacchetto statico compilato pronto per il deployment
       - uses: actions/upload-artifact@v4
